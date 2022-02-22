@@ -35,9 +35,13 @@ namespace AudioMixerClone
             {
                 //マスターの設定
                 masterSlider.displayNameTextBlock.Text = "マスター";
+                masterSlider.slider.Value = device.AudioEndpointVolume.MasterVolumeLevelScalar * 100;
                 using(Icon icon = GetIconFromIconPath(device.IconPath))
                 {
-                    masterSlider.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
+                    if (icon != null)
+                    {
+                        masterSlider.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
+                    }
                 }
 
                 //各アプリの追加
@@ -58,6 +62,7 @@ namespace AudioMixerClone
                             }
                             sliderAndIcon.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
                         }
+                        sliderAndIcon.slider.Value = audioSession.SimpleAudioVolume.Volume * 100;
                         appStackPanel.Children.Insert(0, sliderAndIcon); //システム音声は、アプリの最初に追加
                     }
                     else
@@ -78,6 +83,7 @@ namespace AudioMixerClone
                         {
                             sliderAndIcon.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
                         }
+                        sliderAndIcon.slider.Value = audioSession.SimpleAudioVolume.Volume * 100;
                         appStackPanel.Children.Add(sliderAndIcon);
                     }
                 }
