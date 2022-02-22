@@ -1,6 +1,7 @@
 ﻿using NAudio.CoreAudioApi;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,11 +27,20 @@ namespace AudioMixerClone
         {
             InitializeComponent();
 
+
             System.Diagnostics.Process[] ps = System.Diagnostics.Process.GetProcesses();
 
             using (MMDeviceEnumerator DevEnum = new MMDeviceEnumerator())
             using (MMDevice device = DevEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia))
             {
+                //マスターの設定
+                masterSlider.displayNameTextBlock.Text = "マスター";
+                using(Icon icon = GetIconFromIconPath(device.IconPath))
+                {
+                    masterSlider.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
+                }
+
+                //各アプリの追加
                 SessionCollection sessionCollection = device.AudioSessionManager.Sessions;
                 for (int i = 0; i < sessionCollection.Count; i++)
                 {
@@ -39,30 +49,70 @@ namespace AudioMixerClone
                     if (audioSession.IsSystemSoundsSession)
                     {
                         sliderAndIcon.displayNameTextBlock.Text = "システム音";
-                        appStackPanel.Children.Insert(0, sliderAndIcon);
-                        continue;
+                        string iconpath = audioSession.IconPath;
+                        using (Icon icon = GetIconFromIconPath(iconpath))
+                        {
+                            if (icon == null)
+                            {
+                                continue;
+                            }
+                            sliderAndIcon.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
+                        }
+                        appStackPanel.Children.Insert(0, sliderAndIcon); //システム音声は、アプリの最初に追加
                     }
-
-                    string displayName = audioSession.DisplayName;
-                    if (string.IsNullOrWhiteSpace(displayName))
+                    else
                     {
-                        displayName = ps.First(x => x.Id == audioSession.GetProcessID).MainWindowTitle;
+                        string displayName = audioSession.DisplayName;
                         if (string.IsNullOrWhiteSpace(displayName))
                         {
-                            displayName = ps.First(x => x.Id == audioSession.GetProcessID).ProcessName;
+                            displayName = ps.First(x => x.Id == audioSession.GetProcessID).MainWindowTitle;
+                            if (string.IsNullOrWhiteSpace(displayName))
+                            {
+                                displayName = ps.First(x => x.Id == audioSession.GetProcessID).ProcessName;
+                            }
                         }
+                        sliderAndIcon.displayNameTextBlock.Text = displayName;
+
+                        string exeName = ps.First(x => x.Id == audioSession.GetProcessID).MainModule.FileName;
+                        using (Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(exeName))
+                        {
+                            sliderAndIcon.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
+                        }
+                        appStackPanel.Children.Add(sliderAndIcon);
                     }
-                    sliderAndIcon.displayNameTextBlock.Text = displayName;
-
-                    string exeName = ps.First(x => x.Id == audioSession.GetProcessID).MainModule.FileName;
-                    System.Drawing.Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(exeName);
-                    sliderAndIcon.mainImage.Source = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, null);
-
-
-                    appStackPanel.Children.Add(sliderAndIcon);
                 }
             }
 
+        }
+
+        /// <summary>
+        /// wasapiのIconPathからアイコンを取得します。
+        /// </summary>
+        /// <param name="iconPath"></param>
+        /// <returns></returns>
+        private Icon GetIconFromIconPath(string iconPath)
+        {
+            if (string.IsNullOrWhiteSpace(iconPath))
+            {
+                return null;
+            }
+            if (System.IO.File.Exists(iconPath))
+            {
+                return System.Drawing.Icon.ExtractAssociatedIcon(iconPath);
+            }
+            else
+            {
+                string[] sprintedPath = iconPath.Split(',');
+                Icon[] tempIcons = Native.ExtractIconEx(Environment.ExpandEnvironmentVariables(sprintedPath[0]).Replace("@", ""), int.Parse(sprintedPath[1]), 1);
+                if (tempIcons.Length == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    return tempIcons[0];
+                }
+            }
         }
     }
 }
