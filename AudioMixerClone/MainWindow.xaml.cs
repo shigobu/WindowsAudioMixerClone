@@ -22,7 +22,7 @@ namespace AudioMixerClone
 
             // タイマのインスタンスを生成
             timer = new DispatcherTimer();
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            timer.Interval = new TimeSpan(0, 0, 0, 0, 50);
             timer.Tick += _timer_Tick;
             timer.Start();
 
@@ -115,6 +115,19 @@ namespace AudioMixerClone
                 }
 
                 //各オーディオセッションの音量やミュート状態を更新
+                foreach (SliderAndIcon sliderAndIcon in appStackPanel.Children)
+                {
+                    SimpleAudioVolume audioVolume = sessionCollection[sliderAndIcon.SessionIndex].SimpleAudioVolume;
+                    if (!IsEqual(sliderAndIcon.slider.Value, audioVolume.Volume * 100))
+                    {
+                        sliderAndIcon.slider.Value = audioVolume.Volume * 100;
+                    }
+
+                    if (sliderAndIcon.IsMute != audioVolume.Mute)
+                    {
+                        sliderAndIcon.IsMute = audioVolume.Mute;
+                    }
+                }
 
             }
         }
@@ -160,6 +173,12 @@ namespace AudioMixerClone
                     return tempIcons[0];
                 }
             }
+        }
+
+        private bool IsEqual(double value1, double value2)
+        {
+            double tol = 1e-5;
+            return Math.Abs(value1 - value2) < tol;
         }
     }
 }
