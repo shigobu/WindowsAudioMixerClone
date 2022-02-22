@@ -50,6 +50,9 @@ namespace AudioMixerClone
                 {
                     AudioSessionControl audioSession = sessionCollection[i];
                     SliderAndIcon sliderAndIcon = new SliderAndIcon();
+                    sliderAndIcon.SessionIndex = i;
+                    sliderAndIcon.SliderValueChanged += Slider_ValueChanged;
+
                     if (audioSession.IsSystemSoundsSession)
                     {
                         sliderAndIcon.displayNameTextBlock.Text = "システム音";
@@ -87,6 +90,18 @@ namespace AudioMixerClone
                         appStackPanel.Children.Add(sliderAndIcon);
                     }
                 }
+            }
+
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+            using (MMDeviceEnumerator DevEnum = new MMDeviceEnumerator())
+            using (MMDevice device = DevEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia))
+            {
+                SessionCollection sessionCollection = device.AudioSessionManager.Sessions;
+                sessionCollection[((SliderAndIcon)sender).SessionIndex].SimpleAudioVolume.Volume = (float)e.NewValue / 100;
             }
 
         }

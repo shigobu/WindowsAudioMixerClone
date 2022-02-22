@@ -23,6 +23,12 @@ namespace AudioMixerClone
         public SliderAndIcon()
         {
             InitializeComponent();
+
+            slider.ValueChanged += (sender, e) => { SliderValueChanged?.Invoke(this, e); };
         }
+
+        public int SessionIndex { get; set; }
+
+        public event RoutedPropertyChangedEventHandler<double> SliderValueChanged;
     }
 }
