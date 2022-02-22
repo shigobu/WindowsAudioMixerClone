@@ -5,8 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AudioMixerClone"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="MainWindow" Height="400" Width="500">
+        <DockPanel Margin="5">
+            <GroupBox DockPanel.Dock="Left" Header="マスター">
+                <local:SliderAndIcon x:Name="masterSlider"/>
+            </GroupBox>
+            <GroupBox Header="アプリケーション">
+            <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="appStackPanel" Orientation="Horizontal">
+                        <!--<local:SliderAndIcon/>
+                        <Border Margin="3" BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}" />
+                        <local:SliderAndIcon/>
+                        <Border Margin="3" BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}" />
+                        <local:SliderAndIcon/>-->
+                    </StackPanel>
+                </ScrollViewer>
+            </GroupBox>
+        </DockPanel>
 </Window>
